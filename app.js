@@ -1,33 +1,30 @@
-const express = require("express");
-const morgan = require("morgan");
-const client = require("./db");
-const postList = require("./views/postList");
-const postDetails = require("./views/postDetails");
+const express = require("express")
+const morgan = require("morgan")
+const client = require("./db")
+const postList = require("./views/postList")
+const postDetails = require("./views/postDetails")
+const addPost = require("./views/addPost")
 
-const app = express();
+const app = express()
 
-app.use(morgan("dev"));
-app.use(express.static(__dirname + "/public"));
+// parses url-encoded bodies
+app.use(express.urlencoded({ extended: false }))
 
-const baseQuery = "SELECT posts.*, users.name, counting.upvotes FROM posts INNER JOIN users ON users.id = posts.userId LEFT JOIN (SELECT postId, COUNT(*) as upvotes FROM upvotes GROUP BY postId) AS counting ON posts.id = counting.postId\n";
+// parses json bodies
+app.use(express.json())
 
-app.get("/", async (req, res, next) => {
-  try {
-    const data = await client.query(baseQuery);
-    res.send(postList(data.rows));
-  } catch (error) { next(error) }
-});
+app.use(morgan("dev"))
+app.use(express.static(__dirname + "/public"))
 
-app.get("/posts/:id", async (req, res, next) => {
-  try {
-    const data = await client.query(baseQuery + "WHERE posts.id = $1", [req.params.id]);
-    const post = data.rows[0];
-    res.send(postDetails(post));
-  } catch (error) { next(error) }
-});
+app.use("/posts", require("./routes/posts"))
+// app.use("/add", require("./routes/posts"))
 
-const PORT = 1337;
+app.get("/", (req, res, next) => {
+  res.redirect("/posts")
+})
+
+const PORT = 1337
 
 app.listen(PORT, () => {
-  console.log(`App listening in port ${PORT}`);
-});
+  console.log(`App listening in port ${PORT}`)
+})
