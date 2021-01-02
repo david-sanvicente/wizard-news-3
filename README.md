@@ -1,5 +1,7 @@
 # wizard-news-3
 
+Workshop Notes
+
 **psql client**: (shell), human interface
 
 **pg**: (driver), application interface
